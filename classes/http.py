@@ -1,13 +1,25 @@
 import classes.tcp as tcp
 
 class Server(tcp.Server):
-	pass
+	def start(self):
+		super(Server, self).start(callback=self.tcp_handler)
+
+	def tcp_handler(self, connection):
+		print('Message from', connection.address)
+		while connection.is_alive: #Reads connection util end of transmition
+			data = connection.read(length=5)
+			connection.send(data)
+			print(data)
 
 class Client(tcp.Client):
-	pass
+	def send(self, msg):
+		super(Client, self).send(msg, callback=self.tcp_handler)
 
+	def tcp_handler(self, connection):
+		while connection.is_alive:
+			data = connection.read()
+			print(data)
 
-class Client:
 	class Response:
 
 		def parse(self):
