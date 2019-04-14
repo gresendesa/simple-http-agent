@@ -3,7 +3,6 @@ import classes.tcp as tcp
 class Server(tcp.Server):
 	pass
 
-
 class Client(tcp.Client):
 	pass
 

@@ -7,8 +7,25 @@ class Socket(object):
 		self.host = host
 		self.port = port
 
-	def close(self):
-		pass
+	class Connection(object):
+
+		def __init__(self, socket, address=()):
+			self.socket = socket
+			self.address = address
+			self.is_alive = True
+
+		def send(self, msg):
+			if msg: self.socket.sendall(msg)
+
+		def read(self):
+			try:
+				return self.socket.recv(1024)
+			except ConnectionResetError:
+				self.is_alive = False
+				print('ISSUE: Connection closed by client')
+
+		def close(self):
+			self.socket.close()
 
 class Client(Socket):
 
@@ -18,7 +35,7 @@ class Client(Socket):
 	def send(self, msg, callback):
 		self.socket.connect((self.host, self.port))
 		self.socket.sendall(msg)
-		callback(self.socket)
+		callback(Socket.Connection(socket=self.socket))
 
 class Server(Socket):
 
@@ -29,14 +46,5 @@ class Server(Socket):
 		self.socket.bind((self.host, self.port))
 		self.socket.listen(1)
 		while True:
-			request = Server.Request(*self.socket.accept())
-			callback(request)
-
-	class Request(object):
-		def __init__(self, connection, address):
-			self.connection = connection
-			self.address = address
-			self.connection.settimeout(1)
-
-		def reply(self, msg):
-			self.connection.sendall(msg)
+			connection = Socket.Connection(*self.socket.accept())
+			callback(connection)
