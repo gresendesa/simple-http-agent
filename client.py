@@ -1,11 +1,11 @@
 from classes import tcp
+from classes import http
 
 def handle(connection):
-	if connection.is_alive:
+	while connection.is_alive:
 		data = connection.read()
-		connection.send(b'zeta')
-		data = connection.read()
-		connection.send(b'zeta2')
 		print(data)
 
-tcp.Client(host='localhost', port=50007).send(msg=b'Hello World', callback=handle)
+tcp.Client(host='localhost', port=50007).send(msg=http.Client.Request().build(), callback=handle)
+
+

@@ -15,14 +15,18 @@ class Socket(object):
 			self.is_alive = True
 
 		def send(self, msg):
-			if msg: self.socket.sendall(msg)
-
-		def read(self):
 			try:
-				return self.socket.recv(1024)
-			except ConnectionResetError:
+				self.socket.sendall(msg)
+			except Exception as msg:
 				self.is_alive = False
-				print('ISSUE: Connection closed by client')
+				print('SEND ISSUE: {}'.format(msg))
+
+		def read(self, length=1024):
+			try:
+				return self.socket.recv(length)
+			except Exception as msg:
+				self.is_alive = False
+				print('READ ISSUE: {}'.format(msg))
 
 		def close(self):
 			self.socket.close()
