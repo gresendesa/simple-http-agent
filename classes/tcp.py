@@ -15,8 +15,10 @@ class Client(Socket):
 	def __init__(self, host, port):
 		super(Client, self).__init__(host=host, port=port)
 
-	def connect(self, callback):
-		pass
+	def send(self, msg, callback):
+		self.socket.connect((self.host, self.port))
+		self.socket.sendall(msg)
+		callback(self.socket)
 
 class Server(Socket):
 

@@ -1,14 +1,7 @@
-#from classes import http
+from classes import tcp
 
-#http.Client()
+def handle(socket):
+	data = socket.recv(1024)
+	print('Received', repr(data))
 
-# Echo client program
-import socket
-
-HOST = 'localhost'    # The remote host
-PORT = 50007              # The same port as used by the server
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    s.sendall(b'Hello, world')
-    data = s.recv(1024)
-print('Received', repr(data))
+tcp.Client(host='localhost', port=50007).send(msg=b'Hello World', callback=handle)
