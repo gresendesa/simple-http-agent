@@ -13,6 +13,7 @@ class Socket(object):
 			self.socket = socket
 			self.address = address
 			self.is_alive = True
+			self.buffer = b''
 
 		def send(self, msg):
 			try:
@@ -21,9 +22,11 @@ class Socket(object):
 				self.is_alive = False
 				print('SEND ISSUE: {}'.format(msg))
 
-		def read(self, length=1024):
+		def read(self, length=4098):
 			try:
-				return self.socket.recv(length)
+				data = self.socket.recv(length)
+				self.buffer += data
+				return data
 			except Exception as msg:
 				self.is_alive = False
 				print('READ ISSUE: {}'.format(msg))
