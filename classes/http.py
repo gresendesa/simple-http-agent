@@ -1,80 +1,56 @@
-import classes.tcp as tcp
-import re
+from classes.low_level import TCPAgent
+from classes.low_level import Socket, Stream
 
+class HTTPConnection(object):
+	def __init__(self, socket_connection):
+			self.socket_connection = socket_connection
 
-class Message:
+	def capture_header(self):
+		while not self.socket_connection.stream.has_double_CRLF():
+			self.socket_connection.read()
 
-	def __init__(self, content = b''):
-		self.stream = content
-		self.raw_headers = b''
-		self.raw_content = b''
+		return HTTPMessage(self.socket_connection.stream.extract())
 
-	def fill(self, input):
-		self.stream += input
-		return self
+	def pick_message(self):
+		pass
 
-	def has_headers(self):
-		if b'\r\n\r\n' in self.stream:
-			separated = self.stream.split(b'\r\n\r\n')
-			self.raw_headers = separated[0]
-			self.raw_content = separated[1]
-			return True
-		return False
+	def send_message(self, message):
+		self.socket_connection.socket.sendall(message)
 
-	def get_meta(self):
-		list_raw_headers = self.raw_headers.split(b'\r\n')
-		meta = [tuple(line.split(b' ')) for line in list_raw_headers]
-		return {
-			'request-line': meta.pop(0),
-			'headers': dict(meta),
-		}
+	def close(self):
+		self.socket_connection.close()
 
-	class Request:
+class HTTPAgent(TCPAgent):
+	
+	def listen(self, handler):
 
-		def build(self):
-			return b"""GET /somedir/page.html HTTP/1.1\r
-Host: www.someschool.edu\r
-Connection: close\r
-User-agent: Mozilla/5.0\r
-Content-Length: 20\r
-Accepted-language: fr\r\n\r\n"""
-		
+		handle = lambda connection: handler(HTTPConnection(socket_connection=connection))
+		super().listen(connection_handler=handle)
 
-class Server(tcp.Server):
-	def start(self):
-		super(Server, self).start(callback=self.tcp_handler)
+	def connect(self):
 
-	def tcp_handler(self, connection):
-		print('Message from', connection.address)
-		msg = Message()
-		while connection.is_alive: # Get headers
-			data = connection.read()
-			connection.send(data)
-			if msg.fill(data).has_headers():
-				break
-		connection.close()
-		print(msg.get_meta())
+		return HTTPConnection(socket_connection=super().connect())
 
-class Client(tcp.Client):
-	def send(self, msg):
-		super(Client, self).send(msg, callback=self.tcp_handler)
+class HTTPMessage(object):
 
-	def tcp_handler(self, connection):
-		while connection.is_alive:
-			data = connection.read()
-			print(data)
+	def __init__(self, message):
+		try:
+			separated = message.split(Stream.Double_CRLF, 2)
+			self.meta, self.body = tuple(separated) if len(separated)==2 else tuple(separated[0], b'')
+		except:
+			raise Exception('Inconsistent HTTP message')
 
-	class Response:
+		lines = self.meta.split(Stream.CRLF)
+		self.request_line = lines.pop(0).split(Stream.SP)
+		self.headers = dict([tuple(line.split(Stream.SP)) for line in lines])
 
-		def parse(self):
-			pass
+	def append_to_body(self, content):
+		self.body += content
 
-		def build(self):
-			pass
+	class Builder:
 
+		def __init__(self, request_line: tuple, headers: list, body):
+			self.content = ((Stream.SP).join(list(request_line))) + Stream.CRLF + (Stream.CRLF).join([(b':'+Stream.SP).join(i) for i in headers]) + Stream.Double_CRLF + body
 
-class Parser():
-	def __init__(self, msg):
-		separated_msg = msg.split('\r\n\r\n')
-		headers = separated_msg[0]
-		content = separated_msg[1]
+		def get_bytes(self):
+			return self.content
