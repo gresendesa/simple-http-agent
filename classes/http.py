@@ -52,5 +52,5 @@ class HTTPMessage(object):
 		def __init__(self, request_line: tuple, headers: list, body):
 			self.content = ((Stream.SP).join(list(request_line))) + Stream.CRLF + (Stream.CRLF).join([(b':'+Stream.SP).join(i) for i in headers]) + Stream.Double_CRLF + body
 
-		def get_bytes(self):
+		def get(self):
 			return self.content

@@ -54,7 +54,6 @@ class Socket(object):
 		def close(self):
 			self.socket.close()
 
-
 class TCPAgent(Socket):
 
 	def listen(self, connection_handler):
