@@ -1,7 +1,7 @@
 import socket
 import sys
 
-class Stream(object):
+class Stream:
 
 	SP = b' '
 	CR = b'\r'
@@ -19,17 +19,17 @@ class Stream(object):
 		return Stream.Double_CRLF in self.content
 
 	def size(self):
-		return sys.getsizeof(self.content)
+		return len(self.content)
 
-	def extract(self):
+	def extract(self, length):
 		data = self.content
-		self.content = b''
-		return data
+		self.content = self.content[length:]
+		return data[0:length]
 
 	def __str__(self):
 		return self.content
 
-class Socket(object):
+class Socket:
 
 	def __init__(self, host, port):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Instancio o socket aqui
@@ -46,10 +46,10 @@ class Socket(object):
 		def send(self, msg):
 			self.socket.sendall(msg)
 
-		def read(self, length=4096):
+		def read(self, length=55):
 			data = self.socket.recv(length)
 			self.stream.attach(data)
-			return sys.getsizeof(data)
+			return len(data)
 
 		def close(self):
 			self.socket.close()
