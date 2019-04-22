@@ -1,4 +1,4 @@
-from classes.transport_layer import TCPAgent, Socket, Stream
+from classes.transport_layer import TCPAgent, Stream
 import sys
 
 class HTTPConnection:
