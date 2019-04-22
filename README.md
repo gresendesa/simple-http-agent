@@ -1,4 +1,4 @@
-# simple-http-server
+# simple-http-agent
 
 ## Virtualenv
 
