@@ -1,4 +1,4 @@
-from classes import http, file
+from classes import application_layer, file
 
 def handler(http_connection):
 
@@ -11,9 +11,9 @@ def handler(http_connection):
 		fname = 'index.html' if urn == '' else urn
 
 		if file.exists(name=fname):
-			response = http.HTTPMessage.Builder(request_line=(b'HTTP/1.1', b'200', b'OK'), headers=[(b'Connection', b'close'), (b'Content-Type', bytes(file.mime(fname), 'utf-8'))], body=file.get_content(fname)).get()
+			response = application_layer.HTTPMessage.Builder(request_line=(b'HTTP/1.1', b'200', b'OK'), headers=[(b'Connection', b'close'), (b'Content-Type', bytes(file.mime(fname), 'utf-8'))], body=file.get_content(fname)).get()
 		else:
-			response = http.HTTPMessage.Builder(request_line=(b'HTTP/1.1', b'404', b'Not Found'), headers=[(b'Connection', b'close'), (b'Content-Type', b'text/html')], body=b'').get()
+			response = application_layer.HTTPMessage.Builder(request_line=(b'HTTP/1.1', b'404', b'Not Found'), headers=[(b'Connection', b'close'), (b'Content-Type', b'text/html')], body=b'').get()
 
 		if m.request_line[0] == b'GET':
 
@@ -29,4 +29,4 @@ def handler(http_connection):
 
 print('Simple HTTP server')
 
-http.HTTPAgent(host='', port=50007).listen(handler=handler)
+application_layer.HTTPAgent(host='', port=50007).listen(handler=handler)
